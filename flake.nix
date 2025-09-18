@@ -59,7 +59,10 @@
             dockerfile-language-server-nodejs
 
             # Programming Languages
-            nginx-language-server
+            # nginx-language-server
+
+
+            trivy
           ];
         };
       });

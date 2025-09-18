@@ -1,12 +1,13 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 @plugin "tailwindcss-motion";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 @theme inline {
@@ -126,5 +127,71 @@
 
   .dev {
     @apply border-2 border-red-500;
+  }
+
+  /* Custom scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: calc(var(--radius) * 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(var(--border));
+    border-radius: calc(var(--radius) * 0.5);
+    border: 1px solid oklch(var(--background));
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(var(--muted-foreground) / 0.4);
+    border-color: oklch(var(--muted) / 0.8);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: oklch(var(--accent-foreground) / 0.6);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Enhanced scrollbar for specific containers */
+  .scrollbar-enhanced::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-enhanced::-webkit-scrollbar-track {
+    background: oklch(var(--muted) / 0.3);
+    border-radius: var(--radius);
+    margin: 2px;
+  }
+
+  .scrollbar-enhanced::-webkit-scrollbar-thumb {
+    background: oklch(var(--primary) / 0.6);
+    border-radius: var(--radius);
+    border: 2px solid oklch(var(--background));
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .scrollbar-enhanced::-webkit-scrollbar-thumb:hover {
+    background: oklch(var(--primary) / 0.8);
+    transform: scale(1.05);
+  }
+
+  /* Firefox scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(var(--border)) transparent;
+  }
+
+  .scrollbar-enhanced {
+    scrollbar-width: auto;
+    scrollbar-color: oklch(var(--primary) / 0.6) oklch(var(--muted) / 0.3);
   }
 }
