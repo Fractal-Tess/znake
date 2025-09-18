@@ -1,9 +1,11 @@
-import "~/styles/globals.css";
+import PixelBlast from "~/components/PixelBlast"
 
-import type { Metadata } from "next";
-import { Geist } from "next/font/google";
-import PixelBlast from "~/components/PixelBlast";
-import { TRPCReactProvider } from "~/trpc/react";
+import "~/styles/globals.css"
+
+import type { Metadata } from "next"
+import { Geist } from "next/font/google"
+
+import { TRPCReactProvider } from "~/trpc/react"
 
 export const metadata: Metadata = {
   title: "Znake - Docker Security Scanner",
@@ -15,12 +17,12 @@ export const metadata: Metadata = {
     { rel: "icon", url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
     { rel: "icon", url: "/favicon-48.png", sizes: "48x48", type: "image/png" },
   ],
-};
+}
 
 const geist = Geist({
   subsets: ["latin"],
   variable: "--font-geist-sans",
-});
+})
 
 export default function RootLayout({
   children,
@@ -29,7 +31,7 @@ export default function RootLayout({
     <html className={`${geist.variable} dark`} lang="en">
       <body>
         <PixelBlast
-          className="!fixed -z-10 inset-0 h-screen w-screen"
+          className="!fixed inset-0 -z-10 h-screen w-screen"
           color="#4ade80"
           edgeFade={1}
           enableRipples
@@ -50,5 +52,5 @@ export default function RootLayout({
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>
     </html>
-  );
+  )
 }

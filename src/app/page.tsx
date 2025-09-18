@@ -1,10 +1,11 @@
-"use client";
+"use client"
 
-import { Github } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import SplitText from "~/components/SplitText";
-import { Button } from "~/components/ui/button";
+import Image from "next/image"
+import Link from "next/link"
+import { Github } from "lucide-react"
+
+import { Button } from "~/components/ui/button"
+import SplitText from "~/components/SplitText"
 
 export default function Home() {
   return (
@@ -20,7 +21,7 @@ export default function Home() {
             src="/icon-32.png"
             width={32}
           />
-          <span className="font-semibold text-foreground text-xl">Znake</span>
+          <span className="text-foreground text-xl font-semibold">Znake</span>
         </div>
 
         {/* GitHub Button */}
@@ -41,7 +42,7 @@ export default function Home() {
         <div className="max-w-4xl text-center">
           {/* New Feature Tag */}
           <Button
-            className="mb-8 rounded-full px-4 py-2 font-medium text-sm"
+            className="mb-8 rounded-full px-4 py-2 text-sm font-medium"
             size="sm"
             variant="secondary"
           >
@@ -50,7 +51,7 @@ export default function Home() {
           </Button>
 
           {/* Main Heading */}
-          <h1 className="mb-6 font-bold text-5xl text-foreground leading-tight md:text-7xl">
+          <h1 className="text-foreground mb-6 text-5xl leading-tight font-bold md:text-7xl">
             <SplitText
               className="block"
               delay={100}
@@ -79,7 +80,7 @@ export default function Home() {
 
           {/* Description */}
           <SplitText
-            className="!block mx-auto mb-8 max-w-2xl text-muted-foreground text-xl"
+            className="text-muted-foreground mx-auto mb-8 !block max-w-2xl text-xl"
             delay={10}
             duration={0.5}
             ease="power3.out"
@@ -95,7 +96,7 @@ export default function Home() {
           {/* Call to Action Button */}
           <Button
             asChild
-            className="motion-preset-slide-up motion-delay-2000 motion-duration-1000 px-8 py-4 font-semibold text-lg"
+            className="motion-preset-slide-up motion-delay-2000 motion-duration-1000 px-8 py-4 text-lg font-semibold"
             size="lg"
           >
             <Link href="/scan">Start Scanning</Link>
@@ -103,5 +104,5 @@ export default function Home() {
         </div>
       </main>
     </div>
-  );
+  )
 }
