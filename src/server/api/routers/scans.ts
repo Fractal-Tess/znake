@@ -4,6 +4,7 @@ import { desc, eq } from "drizzle-orm"
 import { z } from "zod"
 
 import { DockerHubClient } from "~/lib/docker-hub"
+import { getStageProgress, type ScanStage } from "~/lib/scan-stages"
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc"
 import type { db as DatabaseType } from "~/server/db"
 import { images, scans, vulnerabilities } from "~/server/db/schema"
@@ -29,23 +30,47 @@ const MAX_LIMIT = 100
 const createInitialScanEvent = (
   scan: {
     status: string
+    stage?: string | null
     progress?: number | null
     errorMessage?: string | null
   },
   scanId: number
 ): ScanProgressEvent => {
-  const getStatusMessage = (status: string, errorMessage?: string | null) => {
+  const getStatusMessage = (
+    status: string,
+    stage?: string | null,
+    errorMessage?: string | null
+  ) => {
     if (status === "completed") return "Scan completed"
     if (status === "failed") return errorMessage || "Scan failed"
-    if (status === "running") return "Scanning in progress"
+    if (status === "running") {
+      switch (stage) {
+        case "initializing":
+          return "Initializing scan..."
+        case "downloading":
+          return "Downloading image and database..."
+        case "scanning":
+          return "Scanning packages for vulnerabilities..."
+        case "analyzing":
+          return "Analyzing discovered vulnerabilities..."
+        case "processing":
+          return "Processing scan results..."
+        default:
+          return "Scanning in progress"
+      }
+    }
     return "Scan pending"
   }
+
+  const stage = (scan.stage as ScanStage) || "initializing"
+  const progress = scan.progress || getStageProgress(stage)
 
   return {
     scanId,
     status: scan.status as "pending" | "running" | "completed" | "failed",
-    progress: scan.progress || 0,
-    message: getStatusMessage(scan.status, scan.errorMessage),
+    stage,
+    progress,
+    message: getStatusMessage(scan.status, scan.stage, scan.errorMessage),
   }
 }
 
@@ -124,6 +149,7 @@ export const scansRouter = createTRPCRouter({
           .values({
             imageId: imageRecord.id,
             status: "pending",
+            stage: "initializing",
             scanner: "trivy",
             progress: 0,
           })
@@ -361,6 +387,7 @@ async function startBackgroundScan(
       .update(scans)
       .set({
         status: "running",
+        stage: "initializing",
         startedAt: new Date(),
         progress: 0,
       })
@@ -370,15 +397,25 @@ async function startBackgroundScan(
     emitScanUpdate({
       scanId,
       status: "running",
+      stage: "initializing",
       progress: 0,
       message: "Starting scan...",
     })
 
     // Run Trivy scan with progress updates
-    const trivyOutput = await scanImage(imageRef, (progress, message) => {
+    const trivyOutput = await scanImage(imageRef, (stage, message) => {
+      const progress = getStageProgress(stage)
+
+      // Update database with current stage
+      db.update(scans)
+        .set({ stage, progress })
+        .where(eq(scans.id, scanId))
+        .catch(console.error) // Don't fail the scan if DB update fails
+
       emitScanUpdate({
         scanId,
         status: "running",
+        stage,
         progress,
         message,
       })
@@ -417,6 +454,7 @@ async function startBackgroundScan(
       .update(scans)
       .set({
         status: "completed",
+        stage: "completed",
         completedAt: new Date(),
         progress: 100,
         metadata: JSON.stringify({
@@ -430,6 +468,7 @@ async function startBackgroundScan(
     emitScanUpdate({
       scanId,
       status: "completed",
+      stage: "completed",
       progress: 100,
       message: "Scan completed successfully",
     })
@@ -440,6 +479,7 @@ async function startBackgroundScan(
       .update(scans)
       .set({
         status: "failed",
+        stage: "failed",
         completedAt: new Date(),
         errorMessage: error instanceof Error ? error.message : "Unknown error",
       })
@@ -449,6 +489,7 @@ async function startBackgroundScan(
     emitScanUpdate({
       scanId,
       status: "failed",
+      stage: "failed",
       progress: 0,
       message: `Scan failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       error: error instanceof Error ? error.message : "Unknown error",

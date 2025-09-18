@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 
 import {
@@ -17,22 +16,13 @@ import { SidebarTrigger } from "~/components/ui/sidebar"
 import { api } from "~/trpc/react"
 
 import { RecentScansClient } from "./_components/RecentScansClient"
-import { ScanDetailsClient } from "./_components/ScanDetailsClient"
 import { StatisticsCardsClient } from "./_components/StatisticsCardsClient"
 import { VulnerabilityChartClient } from "./_components/VulnerabilityChartClient"
 import { isScanMetadata } from "./types"
 
 export default function DashboardPage() {
-  const [selectedScan, setSelectedScan] = useState<number | null>(null)
-
   // Fetch all scans
   const { data: scansData } = api.scans.listScans.useQuery({ limit: 20 })
-
-  // Fetch detailed results for selected scan
-  const { data: scanResults } = api.scans.getScanResults.useQuery(
-    { scanId: selectedScan || 0 },
-    { enabled: !!selectedScan }
-  )
 
   const scans = scansData?.success ? (scansData.data ?? []) : []
 
@@ -109,15 +99,11 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <VulnerabilityChartClient chartData={chartData} />
           <RecentScansClient
-            onScanSelect={setSelectedScan}
             scans={scans}
-            selectedScan={selectedScan}
+            selectedScan={null}
+            onScanSelect={() => {}}
           />
         </div>
-
-        {selectedScan && scanResults && (
-          <ScanDetailsClient scanResults={scanResults} />
-        )}
       </div>
     </>
   )

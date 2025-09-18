@@ -7,6 +7,7 @@ import {
   BarChart3,
   Container,
   FileText,
+  List,
   Search,
   Settings,
   Shield,
@@ -30,6 +31,11 @@ const menuItems = [
     title: "Scan Images",
     url: "/scan",
     icon: Search,
+  },
+  {
+    title: "All Scans",
+    url: "/scans",
+    icon: List,
   },
   {
     title: "Dashboard",

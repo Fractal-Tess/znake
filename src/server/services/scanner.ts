@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto"
 import fs from "node:fs/promises"
 import path from "node:path"
 
+import type { ScanStage } from "~/lib/scan-stages"
 import type { TrivyScanOutput, TrivyVulnerability } from "~/lib/types"
 
 const TEMP_DIR = "/tmp/znake"
@@ -32,14 +33,14 @@ export function checkTrivyInstalled(): Promise<boolean> {
 // Scan a Docker image for vulnerabilities
 export async function scanImage(
   imageRef: string,
-  onProgress?: (progress: number, message: string) => void
+  onProgress?: (stage: ScanStage, message: string) => void
 ): Promise<TrivyScanOutput> {
   await ensureTempDir()
 
   const scanId = randomUUID()
   const outputFile = path.join(TEMP_DIR, `scan-${scanId}.json`)
 
-  onProgress?.(10, "Starting Trivy scan...")
+  onProgress?.("initializing", "Initializing Trivy scan...")
 
   return new Promise((resolve, reject) => {
     const args = [
@@ -52,7 +53,10 @@ export async function scanImage(
       imageRef,
     ]
 
-    onProgress?.(30, "Downloading image and database...")
+    onProgress?.(
+      "downloading",
+      "Downloading image and vulnerability database..."
+    )
 
     const child = spawn("trivy", args, {
       stdio: ["ignore", "pipe", "pipe"],
@@ -66,10 +70,10 @@ export async function scanImage(
       // Parse progress from stderr if possible
       const output = data.toString()
       if (output.includes("Analyzing")) {
-        onProgress?.(60, "Analyzing vulnerabilities...")
+        onProgress?.("analyzing", "Analyzing discovered vulnerabilities...")
       }
       if (output.includes("Scanning")) {
-        onProgress?.(40, "Scanning packages...")
+        onProgress?.("scanning", "Scanning packages for vulnerabilities...")
       }
     })
 
@@ -80,14 +84,14 @@ export async function scanImage(
       }
 
       try {
-        onProgress?.(90, "Processing results...")
+        onProgress?.("processing", "Processing scan results...")
 
         const output = await fs.readFile(outputFile, "utf-8")
         await fs.unlink(outputFile).catch(() => {}) // Clean up
 
         const result: TrivyScanOutput = JSON.parse(output)
 
-        onProgress?.(100, "Scan completed")
+        onProgress?.("completed", "Scan completed successfully")
         resolve(result)
       } catch (error) {
         reject(new Error(`Failed to parse Trivy output: ${error}`))

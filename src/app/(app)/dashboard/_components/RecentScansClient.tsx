@@ -74,13 +74,12 @@ export function RecentScansClient({
             </div>
           ) : (
             scans.slice(0, 10).map((scan) => (
-              <button
-                className={`w-full rounded-lg border p-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
+              <Link
+                key={scan.id}
+                href={`/scans/${scan.id}`}
+                className={`block w-full rounded-lg border p-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
                   selectedScan === scan.id ? "ring-primary ring-2" : ""
                 }`}
-                key={scan.id}
-                onClick={() => onScanSelect(scan.id)}
-                type="button"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -112,7 +111,7 @@ export function RecentScansClient({
                     {scan.status}
                   </Badge>
                 </div>
-              </button>
+              </Link>
             ))
           )}
         </div>

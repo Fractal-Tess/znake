@@ -1,10 +1,13 @@
 // Event emitter for scan progress updates
 import { EventEmitter, on } from "node:events"
 
+import type { ScanStage } from "~/lib/scan-stages"
+
 export type ScanProgressEvent = {
   scanId: number
   status: "pending" | "running" | "completed" | "failed"
-  progress: number
+  stage: ScanStage
+  progress: number // Calculated from stage
   message: string
   error?: string
 }
