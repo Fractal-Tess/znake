@@ -97,7 +97,7 @@ export default function Home() {
             asChild
             className="motion-preset-slide-up motion-delay-2000 motion-duration-1000 px-8 py-4 text-lg font-semibold"
             size="lg"
-            variant={"destructive"}
+            variant={"secondary"}
           >
             <Link href="/scan">Start Scanning</Link>
           </Button>
