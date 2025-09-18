@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import SplitText from "~/components/SplitText"
 import { Button } from "~/components/ui/button"
+import { HoverBorderGradient } from "~/components/ui/hover-border-gradient"
 import { Github } from "lucide-react"
 
 export default function Home() {
@@ -93,14 +94,12 @@ export default function Home() {
           />
 
           {/* Call to Action Button */}
-          <Button
-            asChild
-            className="motion-preset-slide-up motion-delay-2000 motion-duration-1000 px-8 py-4 text-lg font-semibold"
-            size="lg"
-            variant={"secondary"}
+          <HoverBorderGradient
+            containerClassName="rounded-full mx-auto"
+            className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2"
           >
             <Link href="/scan">Start Scanning</Link>
-          </Button>
+          </HoverBorderGradient>
         </div>
       </main>
     </div>
