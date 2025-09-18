@@ -72,3 +72,13 @@ export type ScanProgress = {
   message?: string
   error?: string
 }
+
+export type LocalDockerImage = {
+  id: string
+  repository: string
+  tag: string
+  imageId: string
+  created: string
+  size: number
+  labels?: Record<string, string>
+}

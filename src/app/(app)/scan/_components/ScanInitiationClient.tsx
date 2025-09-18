@@ -15,6 +15,9 @@ import { Alert, AlertDescription } from "~/components/ui/alert"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
+import { api } from "~/trpc/react"
+
+import { LocalImagesClient } from "./LocalImagesClient"
 
 type ScanInitiationClientProps = {
   imageRef: string
@@ -32,6 +35,21 @@ export function ScanInitiationClient({
   error,
 }: ScanInitiationClientProps) {
   const [activeTab, setActiveTab] = useState("docker-hub")
+  const [localSearchQuery, setLocalSearchQuery] = useState("")
+
+  // Check Docker availability
+  const { data: dockerAvailability } =
+    api.images.local.checkDockerAvailability.useQuery(undefined, {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    })
+
+  const isDockerAvailable = dockerAvailability?.data?.available === true
+
+  // If user is on local tab but Docker is not available, switch to docker-hub
+  if (activeTab === "local" && !isDockerAvailable) {
+    setActiveTab("docker-hub")
+  }
 
   return (
     <div className="mx-auto w-full max-w-4xl">
@@ -49,7 +67,9 @@ export function ScanInitiationClient({
         <h2 className="mb-6 text-xl font-semibold">Scan New Image</h2>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList
+            className={`grid w-full ${isDockerAvailable ? "grid-cols-5" : "grid-cols-4"}`}
+          >
             <TabsTrigger value="docker-hub" className="flex items-center gap-2">
               <Container className="h-4 w-4" />
               Docker Hub
@@ -58,10 +78,12 @@ export function ScanInitiationClient({
               <Github className="h-4 w-4" />
               GitHub
             </TabsTrigger>
-            <TabsTrigger value="local" className="flex items-center gap-2">
-              <HardDrive className="h-4 w-4" />
-              Local
-            </TabsTrigger>
+            {isDockerAvailable && (
+              <TabsTrigger value="local" className="flex items-center gap-2">
+                <HardDrive className="h-4 w-4" />
+                Local
+              </TabsTrigger>
+            )}
             <TabsTrigger
               value="custom"
               className="flex items-center gap-2"
@@ -87,16 +109,24 @@ export function ScanInitiationClient({
               <label htmlFor="docker-hub-input" className="text-sm font-medium">
                 Docker Hub Image
               </label>
-              <div className="relative mt-2">
-                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-                <Input
-                  id="docker-hub-input"
-                  className="pl-9"
-                  placeholder="e.g., nginx:latest or library/ubuntu:20.04"
-                  value={imageRef}
-                  onChange={(e) => setImageRef(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && onStartScan()}
-                />
+              <div className="mt-2 flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                  <Input
+                    id="docker-hub-input"
+                    className="pl-9"
+                    placeholder="e.g., nginx:latest or library/ubuntu:20.04"
+                    value={imageRef}
+                    onChange={(e) => setImageRef(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && onStartScan()}
+                  />
+                </div>
+                <Button
+                  disabled={!imageRef.trim() || isStarting}
+                  onClick={onStartScan}
+                >
+                  {isStarting ? "Starting..." : "Start Scan"}
+                </Button>
               </div>
               <p className="text-muted-foreground mt-1 text-xs">
                 Start typing to search Docker Hub images. Official images don't
@@ -110,16 +140,24 @@ export function ScanInitiationClient({
               <label htmlFor="github-input" className="text-sm font-medium">
                 GitHub Container Registry Image
               </label>
-              <div className="relative mt-2">
-                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-                <Input
-                  id="github-input"
-                  className="pl-9"
-                  placeholder="e.g., ghcr.io/username/repo:tag"
-                  value={imageRef}
-                  onChange={(e) => setImageRef(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && onStartScan()}
-                />
+              <div className="mt-2 flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                  <Input
+                    id="github-input"
+                    className="pl-9"
+                    placeholder="e.g., ghcr.io/username/repo:tag"
+                    value={imageRef}
+                    onChange={(e) => setImageRef(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && onStartScan()}
+                  />
+                </div>
+                <Button
+                  disabled={!imageRef.trim() || isStarting}
+                  onClick={onStartScan}
+                >
+                  {isStarting ? "Starting..." : "Start Scan"}
+                </Button>
               </div>
               <p className="text-muted-foreground mt-1 text-xs">
                 Enter a GitHub Container Registry image reference.
@@ -127,27 +165,46 @@ export function ScanInitiationClient({
             </div>
           </TabsContent>
 
-          <TabsContent value="local" className="mt-6 space-y-4">
-            <div>
-              <label htmlFor="local-input" className="text-sm font-medium">
-                Local Docker Image
-              </label>
-              <div className="relative mt-2">
-                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-                <Input
-                  id="local-input"
-                  className="pl-9"
-                  placeholder="e.g., my-app:latest or localhost:5000/my-app:1.0"
-                  value={imageRef}
-                  onChange={(e) => setImageRef(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && onStartScan()}
-                />
+          {isDockerAvailable && (
+            <TabsContent value="local" className="mt-6 space-y-4">
+              <div>
+                <label htmlFor="local-input" className="text-sm font-medium">
+                  Local Docker Image
+                </label>
+                <div className="mt-2 flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                    <Input
+                      id="local-input"
+                      className="pl-9"
+                      placeholder="e.g., my-app:latest or localhost:5000/my-app:1.0"
+                      value={imageRef}
+                      onChange={(e) => {
+                        setImageRef(e.target.value)
+                        setLocalSearchQuery(e.target.value)
+                      }}
+                      onKeyDown={(e) => e.key === "Enter" && onStartScan()}
+                    />
+                  </div>
+                  <Button
+                    disabled={!imageRef.trim() || isStarting}
+                    onClick={onStartScan}
+                  >
+                    {isStarting ? "Starting..." : "Start Scan"}
+                  </Button>
+                </div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Enter a local Docker image name or local registry reference.
+                </p>
               </div>
-              <p className="text-muted-foreground mt-1 text-xs">
-                Enter a local Docker image name or local registry reference.
-              </p>
-            </div>
-          </TabsContent>
+
+              {/* Local Images List */}
+              <LocalImagesClient
+                onSelectImage={setImageRef}
+                searchQuery={localSearchQuery}
+              />
+            </TabsContent>
+          )}
 
           <TabsContent value="custom" className="mt-6 space-y-4">
             <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -188,16 +245,6 @@ export function ScanInitiationClient({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-
-        {/* Action Buttons */}
-        <div className="mt-6 flex justify-end gap-3 border-t pt-6">
-          <Button
-            disabled={!imageRef.trim() || isStarting}
-            onClick={onStartScan}
-          >
-            {isStarting ? "Starting..." : "Start Scan"}
-          </Button>
-        </div>
       </div>
     </div>
   )

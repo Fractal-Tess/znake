@@ -1,11 +1,10 @@
-// Docker Hub API router for tRPC
+// GitHub Container Registry router for tRPC
 import { z } from "zod"
 
-import { DockerHubClient } from "~/lib/docker-hub"
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc"
 
-export const dockerRouter = createTRPCRouter({
-  // Search for Docker images on Docker Hub
+export const githubRouter = createTRPCRouter({
+  // Search for images in GitHub Container Registry
   searchImages: publicProcedure
     .input(
       z.object({
@@ -15,13 +14,11 @@ export const dockerRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       try {
-        const results = await DockerHubClient.searchImages(
-          input.query,
-          input.limit
-        )
+        // TODO: Implement GitHub Container Registry search
+        // This would require GitHub API integration
         return {
           success: true,
-          data: results,
+          data: [],
         }
       } catch (error) {
         return {
@@ -32,7 +29,7 @@ export const dockerRouter = createTRPCRouter({
       }
     }),
 
-  // Get tags for a repository
+  // Get tags for a GitHub Container Registry repository
   getRepositoryTags: publicProcedure
     .input(
       z.object({
@@ -42,13 +39,11 @@ export const dockerRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       try {
-        const tags = await DockerHubClient.getRepositoryTags(
-          input.repository,
-          input.limit
-        )
+        // TODO: Implement GitHub Container Registry tags fetching
+        // This would require GitHub API integration
         return {
           success: true,
-          data: tags,
+          data: [],
         }
       } catch (error) {
         return {
@@ -59,34 +54,7 @@ export const dockerRouter = createTRPCRouter({
       }
     }),
 
-  // Get specific tag information
-  getTagInfo: publicProcedure
-    .input(
-      z.object({
-        repository: z.string().min(1, "Repository is required"),
-        tag: z.string().min(1, "Tag is required"),
-      })
-    )
-    .query(async ({ input }) => {
-      try {
-        const tagInfo = await DockerHubClient.getTagInfo(
-          input.repository,
-          input.tag
-        )
-        return {
-          success: true,
-          data: tagInfo,
-        }
-      } catch (error) {
-        return {
-          success: false,
-          error:
-            error instanceof Error ? error.message : "Failed to fetch tag info",
-        }
-      }
-    }),
-
-  // Parse image reference
+  // Parse GitHub Container Registry image reference
   parseImageReference: publicProcedure
     .input(
       z.object({
@@ -95,10 +63,24 @@ export const dockerRouter = createTRPCRouter({
     )
     .query(({ input }) => {
       try {
-        const parsed = DockerHubClient.parseImageReference(input.imageRef)
+        // Basic parsing for ghcr.io images
+        const parts = input.imageRef.split("/")
+        if (parts.length < 2 || !parts[0]?.includes("ghcr.io")) {
+          throw new Error("Invalid GitHub Container Registry image reference")
+        }
+
+        const repository = parts.slice(1, -1).join("/")
+        const lastPart = parts[parts.length - 1]
+        const tag = lastPart?.includes(":") ? lastPart.split(":")[1] : "latest"
+
         return {
           success: true,
-          data: parsed,
+          data: {
+            registry: "ghcr.io",
+            repository,
+            tag,
+            fullName: input.imageRef,
+          },
         }
       } catch (error) {
         return {
