@@ -81,8 +81,8 @@ src/
 │   └── page.tsx        # Home page with animated text
 ├── components/          # Reusable components
 │   ├── ui/             # shadcn/ui components
-│   ├── PixelBlast.tsx  # Animated background component
-│   └── SplitText.tsx   # GSAP text animation component
+│   ├── pixel-blast.tsx  # Animated background component
+│   └── split-text.tsx   # GSAP text animation component
 ├── server/             # Backend API
 │   ├── api/            # tRPC routers
 │   └── db/             # Database schema and configuration

@@ -2,10 +2,9 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Github } from "lucide-react"
-
-import { Button } from "~/components/ui/button"
 import SplitText from "~/components/SplitText"
+import { Button } from "~/components/ui/button"
+import { Github } from "lucide-react"
 
 export default function Home() {
   return (
@@ -98,6 +97,7 @@ export default function Home() {
             asChild
             className="motion-preset-slide-up motion-delay-2000 motion-duration-1000 px-8 py-4 text-lg font-semibold"
             size="lg"
+            variant={"destructive"}
           >
             <Link href="/scan">Start Scanning</Link>
           </Button>
