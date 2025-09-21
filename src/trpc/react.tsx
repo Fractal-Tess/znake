@@ -3,7 +3,9 @@
 import { useState } from "react"
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
 import {
+  createTRPCProxyClient,
   httpBatchStreamLink,
+  httpLink,
   httpSubscriptionLink,
   loggerLink,
   splitLink,
@@ -31,6 +33,14 @@ const getQueryClient = () => {
 }
 
 export const api = createTRPCReact<AppRouter>()
+export const apiProxy = createTRPCProxyClient<AppRouter>({
+  links: [
+    httpLink({
+      transformer: SuperJSON,
+      url: `${getBaseUrl()}/api/trpc`,
+    }),
+  ],
+})
 
 /**
  * Inference helper for inputs.

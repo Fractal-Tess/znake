@@ -1,5 +1,5 @@
+import { dockerRouter } from "~/server/api/routers/docker"
 import { imagesRouter } from "~/server/api/routers/images"
-import { postRouter } from "~/server/api/routers/post"
 import { scansRouter } from "~/server/api/routers/scans"
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc"
 
@@ -9,7 +9,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc"
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  post: postRouter,
+  docker: dockerRouter,
   images: imagesRouter,
   scans: scansRouter,
 })

@@ -1,7 +1,7 @@
 // Event emitter for scan progress updates
 import { EventEmitter, on } from "node:events"
 
-import type { ScanStage } from "~/lib/scan-stages"
+import type { ScanStage } from "~/server/scanning"
 
 export type ScanProgressEvent = {
   scanId: number

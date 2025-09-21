@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto"
 import fs from "node:fs/promises"
 import path from "node:path"
 
-import type { ScanStage } from "~/lib/scan-stages"
+import type { ScanStage } from "~/server/scanning"
 import type { TrivyScanOutput, TrivyVulnerability } from "~/lib/types"
 
 const TEMP_DIR = "/tmp/znake"

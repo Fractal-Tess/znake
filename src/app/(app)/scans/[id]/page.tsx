@@ -15,9 +15,7 @@ import { Separator } from "~/components/ui/separator"
 import { SidebarTrigger } from "~/components/ui/sidebar"
 import { api } from "~/trpc/react"
 
-import { ScanProgressClient } from "../../scan/_components/ScanProgressClient"
-import { VulnerabilityStatsClient } from "../../scan/_components/VulnerabilityStatsClient"
-import { VulnerabilityTableClient } from "../../scan/_components/VulnerabilityTableClient"
+// Note: Vulnerability components removed - scan details page simplified
 
 export default function ScanDetailsPage() {
   const params = useParams()
@@ -235,22 +233,18 @@ export default function ScanDetailsPage() {
         </div>
       </header>
       <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
-        <ScanProgressClient
-          imageRef={imageRef}
-          liveProgress={liveProgress}
-          onNewScan={() => (window.location.href = "/scan")}
-          scanStatus={getScanStatusData()}
-        />
-
-        {/* Show results when scan is completed */}
-        {scanResults?.success && scanResults.data && (
-          <div className="space-y-6">
-            <VulnerabilityStatsClient stats={scanResults.data.stats} />
-            <VulnerabilityTableClient
-              vulnerabilities={scanResults.data.vulnerabilities}
-            />
-          </div>
-        )}
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Scan #{scanId}</h1>
+          <p className="text-muted-foreground mt-2">
+            Image: {imageRef}
+          </p>
+          <p className="text-muted-foreground mt-2">
+            Status: {liveProgress?.status || scanStatus?.data?.status || "Unknown"}
+          </p>
+          <p className="text-muted-foreground mt-2">
+            Scan details page simplified - vulnerability components removed
+          </p>
+        </div>
       </div>
     </>
   )

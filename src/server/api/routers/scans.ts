@@ -1,10 +1,9 @@
-// Scanning operations router for tRPC
 import { tracked } from "@trpc/server"
 import { desc, eq } from "drizzle-orm"
 import { z } from "zod"
 
-import { DockerHubClient } from "~/lib/docker-hub"
-import { getStageProgress, type ScanStage } from "~/lib/scan-stages"
+import { dockerHubRegistry } from "~/server/registry"
+import { getStageProgress, type ScanStage } from "~/server/scanning"
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc"
 import type { db as DatabaseType } from "~/server/db"
 import { images, scans, vulnerabilities } from "~/server/db/schema"
@@ -93,22 +92,24 @@ export const scansRouter = createTRPCRouter({
         }
 
         // Parse image reference
-        const parsed = DockerHubClient.parseImageReference(input.imageRef)
+        const parsed = dockerHubRegistry.parseImageReference(input.imageRef)
 
         // Get image info from Docker Hub (optional for now)
         let tagInfo: {
-          full_size?: number
-          images?: Array<{
-            architecture?: string
-            os?: string
-            digest?: string
-          }>
+          size?: number
+          architectures?: string[]
+          digest?: string
         } | null = null
         try {
-          tagInfo = await DockerHubClient.getTagInfo(
-            parsed.repository,
-            parsed.tag
-          )
+          const tags = await dockerHubRegistry.getRepositoryTags(parsed.repository, 10)
+          const specificTag = tags.find(t => t.name === parsed.tag)
+          if (specificTag) {
+            tagInfo = {
+              size: specificTag.size,
+              architectures: specificTag.architectures,
+              digest: specificTag.digest
+            }
+          }
         } catch {
           // Continue without Docker Hub metadata if it fails
         }
@@ -130,10 +131,10 @@ export const scansRouter = createTRPCRouter({
               registry: parsed.registry,
               repository: parsed.repository,
               tag: parsed.tag,
-              size: tagInfo?.full_size || null,
-              architecture: tagInfo?.images?.[0]?.architecture || "amd64",
-              os: tagInfo?.images?.[0]?.os || "linux",
-              digest: tagInfo?.images?.[0]?.digest || null,
+              size: tagInfo?.size || null,
+              architecture: tagInfo?.architectures?.[0] || "amd64",
+              os: "linux", // Default OS since we don't have this info from new schema
+              digest: tagInfo?.digest || null,
             })
             .returning()
 

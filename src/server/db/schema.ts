@@ -8,7 +8,7 @@ import {
   text,
 } from "drizzle-orm/sqlite-core"
 
-import type { ScanStage } from "~/lib/scan-stages"
+import type { ScanStage } from "~/server/scanning"
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
